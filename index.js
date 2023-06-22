@@ -1,5 +1,5 @@
 import { AntColony } from "./AntColony.js";
-import { getIndexes, getMatrix } from "./getMatrix.js";
+import { getIndexes, getMatrixWithPrices, getMatrixWithTimes } from "./getMatrix.js";
 import { parseResults } from "./parseCSV.js";
 
 function convertMinutesToTime(minutes) {
@@ -25,29 +25,38 @@ const routes = await parseResults("./test_task_data.csv");
 ]]
 */
 
-const [times, trains] = getMatrix(routes);
+function calculateBest(timesOrPrices, trains) {
+  const antColony = new AntColony(
+    timesOrPrices,
+    trains,
+    6,
+    1,
+    100,
+    0.95
+  );
 
-const antColony = new AntColony(
-  times,
-  trains,
-  6,
-  1,
-  100,
-  0.95
-);
+  return antColony.run();
+}
 
-const bestRoutes = antColony.run();
-// console.log(bestRoutes);
+const bestRoutesByTime = calculateBest(...getMatrixWithTimes(routes));
+const bestRoutesByPrice = calculateBest(...getMatrixWithPrices(routes));
 
 const indices = getIndexes(routes, true);
 
 console.log("The best in terms of time spent:\n");
 
-bestRoutes[0].forEach(route => {
+bestRoutesByTime[0].forEach(route => {
   console.log(`Train №${route[2]}:
     From ${indices[route[0]]} to ${indices[route[1]]}
     Time spent: ${convertMinutesToTime(route[3])}`)
 });
 
-console.log(`\nTotal time spent ${convertMinutesToTime(bestRoutes[1])}`);
-console.log("\n\nThe best in terms of time spent:\n");
+console.log(`\nTotal time spent ${convertMinutesToTime(bestRoutesByTime[1])}`);
+console.log("\n\nThe best by price:\n");
+bestRoutesByPrice[0].forEach(route => {
+  console.log(`Train №${route[2]}:
+    From ${indices[route[0]]} to ${indices[route[1]]}
+    Price: ${route[3]}`)
+});
+
+console.log(`\nTotal money spent ${bestRoutesByPrice[1].toFixed(2)}`);

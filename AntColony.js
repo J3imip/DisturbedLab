@@ -41,7 +41,7 @@ export class AntColony {
       for (let j = 0; j < path.length; j++) {
         const [src, dest] = path[j];
         const trainNumber = this.trains[src][dest].number; // Get the train number
-        const trainTime = this.trains[src][dest].time; // Get the train time
+        const trainTime = this.trains[src][dest].timeOrPrice; // Get the train time
         path[j] = [src, dest, trainNumber, trainTime]; // Add train number to path
         this.pheromone[src][dest] += 1 / this.distances[src][dest];
       }

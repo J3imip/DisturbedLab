@@ -75,7 +75,42 @@ function filterOptimalRoutesByTime(routes) {
   return finalResult;
 }
 
-export function getMatrix(routes) {
+function filterOptimalRoutesByPrice(routes) {
+  const routesByDirection = {};
+
+  routes.forEach(route => {
+    const direction = `${route.departureStation}-${route.arrivalStation}`;
+
+    if (!routesByDirection[direction]) {
+      routesByDirection[direction] = [];
+    }
+
+    routesByDirection[direction].push(route);
+  });
+
+  const optimalRoutesByStation = [];
+
+  Object.values(routesByDirection).forEach(directionRoutes => {
+    const sortedRoutes = directionRoutes.sort((a, b) =>
+      a.price - b.price
+    );
+
+    const stationNumber = sortedRoutes[0].departureStation;
+
+    if (!optimalRoutesByStation[stationNumber]) {
+      optimalRoutesByStation[stationNumber] = [];
+    }
+
+    const optimalRoute = sortedRoutes[0];
+    optimalRoutesByStation[stationNumber].push(optimalRoute);
+  });
+
+  const finalResult = optimalRoutesByStation.filter(Boolean);
+
+  return finalResult;
+}
+
+export function getMatrixWithTimes(routes) {
   const filteredRoutes = filterOptimalRoutesByTime(routes);
 
   const times = [[]];
@@ -105,7 +140,7 @@ export function getMatrix(routes) {
         );
 
         trains[i][nestedIndex] = {
-          time: times[i][nestedIndex],
+          timeOrPrice: times[i][nestedIndex],
           number: currentRoute.train
         }
       }
@@ -114,5 +149,43 @@ export function getMatrix(routes) {
 
 
   return [times, trains];
+}
+
+
+export function getMatrixWithPrices(routes) {
+  const filteredRoutes = filterOptimalRoutesByPrice(routes);
+
+  const prices = [[]];
+  const trains = [[]];
+  const indexes = getIndexes(routes);
+
+  for(let i = 0; i < 6; i++) {
+    if(!prices[i]) prices[i] = [];
+    if(!trains[i]) trains[i] = [];
+
+    for(let j = 0; j < 6; j++) {
+      prices[i][j] = Infinity;
+      trains[i][j] = { time: null, number: null };
+    }
+  }
+
+  for(let i = 0; i < 6; i++) {
+    for(let j = 0; j < 6; j++) {
+      const currentRoute = filteredRoutes[i][j];
+
+      if(currentRoute && i != j) {
+        const nestedIndex = indexes[currentRoute.arrivalStation];
+
+        prices[i][nestedIndex] = currentRoute.price;
+
+        trains[i][nestedIndex] = {
+          timeOrPrice: prices[i][nestedIndex],
+          number: currentRoute.train
+        }
+      }
+    }
+  }
+
+  return [prices, trains];
 }
 

@@ -1,11 +1,11 @@
-export function getIndexes(routes, reverse = false) {
-  let indexes = {};
+export function getIndices(routes, reverse = false) {
+  let indices = {};
   const stations = [];
 
-  for(let i = 0; i < routes.length; i++) {
+  for (let i = 0; i < routes.length; i++) {
     const ds = routes[i].departureStation;
 
-    if(!stations.includes(ds)) {
+    if (!stations.includes(ds)) {
       stations.push(ds);
     }
   }
@@ -13,16 +13,16 @@ export function getIndexes(routes, reverse = false) {
   let index = 0;
 
   stations.sort((a, b) => a - b).forEach(station => {
-    if(reverse) {
-      indexes[index] = station;
+    if (reverse) {
+      indices[index] = station;
     } else {
-      indexes[station] = index;
+      indices[station] = index;
     }
 
     index++;
   })
 
-  return indexes;
+  return indices;
 }
 
 function getTimeDifference(startTime, endTime) {
@@ -83,7 +83,8 @@ function filterOptimalRoutesByPrice(routes) {
     const direction = `${route.departureStation}-${route.arrivalStation}`;
 
     if (!routesByDirection[direction]) {
-      routesByDirection[direction] = []; }
+      routesByDirection[direction] = [];
+    }
 
     routesByDirection[direction].push(route);
   });
@@ -116,24 +117,24 @@ export function getMatrixWithTimes(routes) {
 
   const times = [[]];
   const trains = [[]];
-  const indexes = getIndexes(routes);
+  const indices = getIndices(routes);
 
-  for(let i = 0; i < 6; i++) {
-    if(!times[i]) times[i] = [];
-    if(!trains[i]) trains[i] = [];
+  for (let i = 0; i < 6; i++) {
+    if (!times[i]) times[i] = [];
+    if (!trains[i]) trains[i] = [];
 
-    for(let j = 0; j < 6; j++) {
+    for (let j = 0; j < 6; j++) {
       times[i][j] = Infinity;
       trains[i][j] = { time: null, number: null };
     }
   }
 
-  for(let i = 0; i < 6; i++) {
-    for(let j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       const currentRoute = filteredRoutes[i][j];
 
-      if(currentRoute) {
-        const nestedIndex = indexes[currentRoute.arrivalStation];
+      if (currentRoute) {
+        const nestedIndex = indices[currentRoute.arrivalStation];
 
         times[i][nestedIndex] = getTimeDifference(
           currentRoute.departureTime,
@@ -159,24 +160,24 @@ export function getMatrixWithPrices(routes) {
 
   const prices = [[]];
   const trains = [[]];
-  const indexes = getIndexes(routes);
+  const indices = getIndices(routes);
 
-  for(let i = 0; i < 6; i++) {
-    if(!prices[i]) prices[i] = [];
-    if(!trains[i]) trains[i] = [];
+  for (let i = 0; i < 6; i++) {
+    if (!prices[i]) prices[i] = [];
+    if (!trains[i]) trains[i] = [];
 
-    for(let j = 0; j < 6; j++) {
+    for (let j = 0; j < 6; j++) {
       prices[i][j] = Infinity;
       trains[i][j] = { time: null, number: null };
     }
   }
 
-  for(let i = 0; i < 6; i++) {
-    for(let j = 0; j < 6; j++) {
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
       const currentRoute = filteredRoutes[i][j];
 
-      if(currentRoute && i != j) {
-        const nestedIndex = indexes[currentRoute.arrivalStation];
+      if (currentRoute && i !== j) {
+        const nestedIndex = indices[currentRoute.arrivalStation];
 
         prices[i][nestedIndex] = currentRoute.price;
 

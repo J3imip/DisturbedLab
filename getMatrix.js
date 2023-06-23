@@ -67,6 +67,7 @@ function filterOptimalRoutesByTime(routes) {
     }
 
     const optimalRoute = sortedRoutes[0];
+
     optimalRoutesByStation[stationNumber].push(optimalRoute);
   });
 
@@ -82,11 +83,11 @@ function filterOptimalRoutesByPrice(routes) {
     const direction = `${route.departureStation}-${route.arrivalStation}`;
 
     if (!routesByDirection[direction]) {
-      routesByDirection[direction] = [];
-    }
+      routesByDirection[direction] = []; }
 
     routesByDirection[direction].push(route);
   });
+
 
   const optimalRoutesByStation = [];
 
@@ -131,7 +132,7 @@ export function getMatrixWithTimes(routes) {
     for(let j = 0; j < 6; j++) {
       const currentRoute = filteredRoutes[i][j];
 
-      if(currentRoute && i != j) {
+      if(currentRoute) {
         const nestedIndex = indexes[currentRoute.arrivalStation];
 
         times[i][nestedIndex] = getTimeDifference(
@@ -141,12 +142,13 @@ export function getMatrixWithTimes(routes) {
 
         trains[i][nestedIndex] = {
           timeOrPrice: times[i][nestedIndex],
-          number: currentRoute.train
+          number: currentRoute.train,
+          departureStation: currentRoute.departureStation,
+          arrivalStation: currentRoute.arrivalStation,
         }
       }
     }
   }
-
 
   return [times, trains];
 }

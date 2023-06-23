@@ -18,12 +18,45 @@ async function readCSVFile(filePath) {
 }
 
 export async function parseResults(filePath) {
-  const results = await readCSVFile(filePath);
+  let results;
+  try {
+    results = await readCSVFile(filePath);
+  } catch (error) {
+    console.log(`Incorrect .csv file structure\n${error.message}`)
+    return;
+  }
 
   const routes = [];
 
   results.forEach(res => {
-    const resSplited = res.split(";");
+    const resSplited = res
+      .split(";")
+      .map(item => item.trim())
+      .filter(Boolean);
+
+    if(resSplited.length < 6) {
+      throw new Error("Incorrect .csv file structure!")
+    }
+
+    const departureTimeSplitted = resSplited[4]
+      .split(":")
+      .map(time => parseInt(time));
+
+    const arrivalTimeSplitted = resSplited[5]
+      .split(":")
+      .map(time => parseInt(time));
+
+    if(
+      departureTimeSplitted[0] > 24 ||
+      departureTimeSplitted[1] > 60 ||
+      departureTimeSplitted[2] > 60 ||
+
+      arrivalTimeSplitted[0] > 24 ||
+      arrivalTimeSplitted[1] > 60 ||
+      arrivalTimeSplitted[2] > 60 
+    ) {
+      throw new Error(`Incorrect departure date structure in №${resSplited[0]} train!`);
+    }
 
     routes.push({
       train: parseInt(resSplited[0]),
